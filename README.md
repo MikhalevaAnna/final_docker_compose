@@ -1,4 +1,4 @@
-## Создание пайплайна обработки и анализа данных о продажах
+## Создание пайплайна для обработки и анализа данных о продажах
 
 **Используя стек технологий: PostgreSQL, ClickHouse, Apache Airflow и PySpark.**
 
@@ -45,7 +45,7 @@
 ```
 ### Команды для запуска проекта:
 ```bash
-    git clone https://github.com/MikhalevaAnna/final_docker_compose.git
+    git clone https://github.com/MikhalevaAnna/pipeline_sales_data.git
     cd final_docker_compose
     docker build -t airflow-with-java .
     docker-compose up --build
