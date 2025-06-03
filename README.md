@@ -30,7 +30,7 @@
 ### Просмотр сгенерированного `sales_data.csv` файла возможен по ссылке:
 https://disk.yandex.ru/d/4tLIy8-LoQqulQ
 
-### Просмотр данных через DBeaver
+### Просмотр данных через DBeaver:
 В **DBeaver**, после успешной работы пайплайна, можно посмотреть полученные таблицы `sales_data` и `sales_data_agg` в **PostgreSQL** и `sales_data_agg` в **ClickHouse**.
 
 #### Для подключение к **PostgreSQL** используются следующие параметры:
