@@ -27,13 +27,13 @@
    
 Все операции по созданию таблиц, обработке, миграции данных происходят внутри **Airflow**.
 
-## Просмотр исходного `sales_data.csv` файла возможен по ссылке:
+### Просмотр сгенерированного `sales_data.csv` файла возможен по ссылке:
 https://disk.yandex.ru/d/4tLIy8-LoQqulQ
 
-## Просмотр данных через DBeaver
+### Просмотр данных через DBeaver
 В **DBeaver**, после успешной работы пайплайна, можно посмотреть полученные таблицы `sales_data` и `sales_data_agg` в **PostgreSQL** и `sales_data_agg` в **ClickHouse**.
 
-### Для подключение к **PostgreSQL** используются следующие параметры:
+#### Для подключение к **PostgreSQL** используются следующие параметры:
 ```
     Хост: localhost
     Порт: 5432
@@ -41,12 +41,12 @@ https://disk.yandex.ru/d/4tLIy8-LoQqulQ
     Пользователь: user
     Пароль: password
 ```
-### Для подключение к **ClickHouse** используются следующие параметры:
+#### Для подключение к **ClickHouse** используются следующие параметры:
 ```
     Хост: localhost
     Порт: 8123
 ```
-### Команды для запуска проекта:
+#### Команды для запуска проекта:
 ```bash
     git clone https://github.com/MikhalevaAnna/pipeline_sales_data.git
     cd final_docker_compose
