@@ -54,7 +54,7 @@ except Exception as error:
     raise Exception(f'Подключиться к БД не удалось! Ошибка: {error}!')
 
 
-def __get_random_date():
+def get_random_date():
     end_date = datetime.now()
     start_date = end_date - timedelta(days=365)
     return (start_date + (end_date - start_date) * random.random()).strftime('%Y-%m-%d')
@@ -71,7 +71,7 @@ def generate_file():
             customer_id = random.randint(1, 7000)
             product_id = random.randint(1, 200)
             quantity = random.randint(1, 10)
-            sale_date = __get_random_date()
+            sale_date = get_random_date()
             sale_amount = round(quantity * (random.random() + random.randint(5, 300)), 2)
             region = random.choice(regions_name)
 
@@ -121,9 +121,9 @@ def aggregation_in_postgres():
              SELECT  
                    region
                    , product_id
-                   , sum(quantity) AS total_quantity
-                   , sum(sale_amount) :: numeric(10, 2) AS total_sale_amount
-                   , (sum(sale_amount)/sum(quantity)) :: numeric(10, 2) AS average_sale_amount
+                   , count(*) AS total_quantity
+                   , (sum(sale_amount :: float)) AS total_sale_amount
+                   , (avg(sale_amount)) :: float AS average_sale_amount
              FROM {table_name_full}      
              GROUP BY region, product_id 
              ORDER BY region, product_id
