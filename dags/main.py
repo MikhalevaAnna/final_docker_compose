@@ -127,8 +127,8 @@ def aggregation_in_postgres():
                    region
                    , product_id
                    , count(*) AS total_quantity
-                   , (sum(sale_amount :: float)) AS total_sale_amount
-                   , (avg(sale_amount)) :: float AS average_sale_amount
+                   , (sum(sale_amount :: NUMERIC(10, 2)) :: NUMERIC(10, 2)) AS total_sale_amount
+                   , (avg(sale_amount)) :: NUMERIC(10, 2) AS average_sale_amount
              FROM {table_name_full}      
              GROUP BY region, product_id 
              ORDER BY region, product_id
