@@ -16,6 +16,7 @@ file_name = "sample_data/sales_data.csv"
 num_records = 1000000
 table_name_full = "sales_data"
 table_name_agg = "sales_data_agg"
+index_name = "sales_data_idx1"
 
 
 default_args = {
@@ -115,6 +116,10 @@ def migration_from_spark_to_postgres():
 
 def aggregation_in_postgres():
     try:
+        cursor.execute(f"""DROP INDEX IF EXISTS {index_name};""")
+        connection_to_postgres.commit()
+        cursor.execute(f"""CREATE index {index_name} ON {table_name_full} (region, product_id);""")
+        connection_to_postgres.commit()
         cursor.execute(f"""DROP TABLE IF EXISTS {table_name_agg};""")
         connection_to_postgres.commit()
         cursor.execute(f"""CREATE TABLE {table_name_agg} AS 
