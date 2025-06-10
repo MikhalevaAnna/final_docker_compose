@@ -3,10 +3,20 @@ from airflow.operators.python_operator import PythonOperator
 from clickhouse_connect.driver import create_client
 import csv, os, pendulum, random
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
 import psycopg2
 from pyspark.sql.functions import col
 from pyspark.sql import SparkSession
+load_dotenv()
 
+POSTGRES_HOST = os.getenv("POSTGRES_HOST")
+POSTGRES_PORT = os.getenv("POSTGRES_PORT")
+POSTGRES_DATABASE = os.getenv("POSTGRES_DATABASE")
+POSTGRES_USER = os.getenv("POSTGRES_USER")
+POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
+
+CLICKHOUSE_HOST = os.getenv("CLICKHOUSE_HOST")
+CLICKHOUSE_PORT = os.getenv("CLICKHOUSE_PORT")
 
 connection_to_postgres = None
 connection_to_clickhouse = None
@@ -26,7 +36,7 @@ default_args = {
 
 
 dag = DAG(
-    'main',
+    'sales_etl_pipeline',
     default_args=default_args,
     description='A simple DAG to interact with PySpark, PostgreSQL and ClickHouse',
     catchup=False,
@@ -34,25 +44,32 @@ dag = DAG(
     schedule_interval='45 12 * * 2',
 )
 
+def get_postgres_cursor():
+    try:
+        connection = psycopg2.connect(
+            host=POSTGRES_HOST,
+            port=POSTGRES_PORT,
+            database=POSTGRES_DATABASE,
+            user=POSTGRES_USER,
+            password=POSTGRES_PASSWORD
+        )
+        return connection, connection.cursor()
+    except Exception as error:
+        raise Exception(f'Не удалось подключиться к PostgreSQL! '
+                        f'Ошибка: {error}!')
 
-try:
-     connection_to_postgres = psycopg2.connect(
-         host="host.docker.internal",
-         port="5432",
-         database="test",
-         user="user",
-         password="password"
-     )
-     cursor = connection_to_postgres.cursor()
-
-     connection_to_clickhouse = create_client(
-         host='host.docker.internal',
-         port=8123,
-         username='',
-         password=''
-     )
-except Exception as error:
-    raise Exception(f'Подключиться к БД не удалось! Ошибка: {error}!')
+def get_clickhouse_connection():
+    try:
+        client = create_client(
+            host=CLICKHOUSE_HOST,
+            port=CLICKHOUSE_PORT,
+            username='',
+            password=''
+        )
+        return client
+    except Exception as error:
+        raise Exception(f"Не удалось подключиться к ClickHouse! "
+                        f"Ошибка: {error}")
 
 
 def get_random_date():
@@ -115,6 +132,7 @@ def migration_from_spark_to_postgres():
 
 
 def aggregation_in_postgres():
+    connection_to_postgres, cursor = get_postgres_cursor()
     try:
         cursor.execute(f"""DROP INDEX IF EXISTS {index_name};""")
         connection_to_postgres.commit()
@@ -139,9 +157,14 @@ def aggregation_in_postgres():
         connection_to_postgres.rollback()
         raise Exception(f'Загрузить агрегированные данные в PostgreSQL в таблицу {table_name_agg} не удалось! '
                         f'Ошибка: {error}!')
+    finally:
+        cursor.close()
+        connection_to_postgres.close()
 
 
 def migration_from_postgres_to_clickhouse():
+    connection_to_clickhouse = get_clickhouse_connection()
+    connection_to_postgres, cursor = get_postgres_cursor()
     try:
         connection_to_clickhouse.command(f"""
                         DROP TABLE IF EXISTS {table_name_agg};""")
@@ -168,9 +191,8 @@ def migration_from_postgres_to_clickhouse():
             f'Загрузить агрегированные данные в Clickhouse в таблицу {table_name_agg} не удалось! '
             f'Ошибка: {error}!')
     finally:
-        if cursor:
+            connection_to_clickhouse.close()
             cursor.close()
-        if connection_to_postgres:
             connection_to_postgres.close()
 
 
